@@ -1,0 +1,5 @@
+dis-snek[voice]
+yt-dlp
+python-dotenv
+orjson
+aiosqlite
