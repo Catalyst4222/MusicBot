@@ -2,7 +2,6 @@ import asyncio
 import time
 
 import aiosqlite
-from aiosqlite import Cursor
 from dis_snek import (InteractionContext, OptionTypes, Scale, Snake, listen,
                       slash_command, slash_option)
 
@@ -26,6 +25,10 @@ class RemindersCog(Scale):
              time REAL
         )"""
         )
+
+    async def shed(self) -> None:
+        super(RemindersCog, self).shed()
+        await self.db.close()
 
     @slash_command(
         name="remindme",
