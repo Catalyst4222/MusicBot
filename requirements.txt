@@ -3,3 +3,4 @@ yt-dlp
 python-dotenv
 orjson
 aiosqlite
+pet-pet-gif

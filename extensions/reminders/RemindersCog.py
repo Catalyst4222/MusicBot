@@ -1,16 +1,21 @@
 import asyncio
+import logging
 import time
 
 import aiosqlite
-from dis_snek import (InteractionContext, OptionTypes, Scale, Snake, listen,
+from naff import (InteractionContext, OptionTypes, Extension, Client, listen,
                       slash_command, slash_option)
 
+logger = logging.getLogger("Myr.reminders")
 
-class RemindersCog(Scale):
-    def __init__(self, bot: Snake):
-        self.bot: Snake = bot
+
+class RemindersCog(Extension):
+    def __init__(self, bot: Client):
+        self.bot: Client = bot
         self.db: aiosqlite.Connection = ...
         self.tasks: dict[int, asyncio.Task] = {}
+
+        logger.info("Reminders cog loaded!")
 
     @listen()
     async def on_startup(self):
@@ -26,9 +31,10 @@ class RemindersCog(Scale):
         )"""
         )
 
-    async def shed(self) -> None:
+    def shed(self) -> None:
         super(RemindersCog, self).shed()
-        await self.db.close()
+        logger.info("Reminders cog unloaded!")
+
 
     @slash_command(
         name="remindme",
@@ -42,9 +48,7 @@ class RemindersCog(Scale):
         required=True,
     )
     @slash_option(
-        name="days",
-        description="Number of days to wait",
-        opt_type=OptionTypes.INTEGER
+        name="days", description="Number of days to wait", opt_type=OptionTypes.INTEGER
     )
     @slash_option(
         name="hours",
@@ -64,7 +68,7 @@ class RemindersCog(Scale):
     async def remindme(
         self, ctx: InteractionContext, content, days=0, hours=0, minutes=0, seconds=0
     ):  # sourcery skip: avoid-builtin-shadow
-        print('a')
+        print("a")
         hours += days * 24
         minutes += hours * 60
         seconds += minutes * 60
@@ -79,7 +83,7 @@ class RemindersCog(Scale):
 
         cursor = await self.db.execute(
             "INSERT INTO reminders VALUES (?, ?, ?, ?, ?)",
-            (id, ctx.author.id, ctx.channel.id, content, time.time() + seconds)
+            (id, ctx.author.id, ctx.channel.id, content, time.time() + seconds),
         )
         await cursor.close()
 
@@ -89,13 +93,10 @@ class RemindersCog(Scale):
             self.send_remind(ctx, int(time.time()) + seconds, content)
         )
 
-
     async def send_remind(self, ctx: InteractionContext, wait_until: int, content: str):
         await asyncio.sleep(wait_until - time.time())
         await ctx.author.send(f"Reminder: {content}")
         del self.tasks[wait_until]
-
-
 
 
 # some string copilot made:
@@ -112,7 +113,7 @@ r"^remind me to (?P<reminder>.*) in (?P<time>\d+) (?P<unit>seconds|minutes|hours
 # );
 
 
-def setup(bot: Snake):  # sourcery skip: instance-method-first-arg-name
+def setup(bot: Client):  # sourcery skip: instance-method-first-arg-name
     RemindersCog(bot)
 
 

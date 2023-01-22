@@ -1,13 +1,14 @@
-import asyncio
+import contextlib
+import logging
 import random
 import re
 import time
+from asyncio import gather, create_task, get_running_loop
 from collections import deque
 from typing import TYPE_CHECKING, Coroutine, Optional, Union
 
-from dis_snek import (ActiveVoiceState, Embed, Guild, GuildText,
-                      InteractionContext, Snake)
-from dis_snek.api.voice.audio import YTDLAudio
+from naff import (ActiveVoiceState, Embed, Guild, GuildText,
+                      InteractionContext, Client)
 from yt_dlp import YoutubeDL
 
 from .utils import (chunk, short_diff_from_time, short_diff_from_unix,
@@ -32,6 +33,8 @@ FFMPEG_OPTIONS = {
 }
 
 EXPIRE_REGEX = re.compile(r"expire=(\d*)")
+
+logger = logging.getLogger("Myr.music.backend")
 
 
 class Song:
@@ -128,7 +131,7 @@ class Queue:
     )
 
     def __init__(self, ctx: InteractionContext):
-        self.bot: Snake = ctx.bot
+        self.bot: Client = ctx.bot
         self.scale: SoundCog = ctx.command.scale
         self.bound_channel: GuildText = ctx.channel
         self.guild: Guild = ctx.guild
@@ -175,10 +178,8 @@ class Queue:
             queue = self.queue
             queue.extend = [queue.popleft() for _ in range(amount - 1) if len(queue)]
         else:
-            try:
+            with contextlib.suppress(IndexError):
                 [self.queue.popleft() for _ in range(amount - 1)]
-            except IndexError:
-                pass
         self.voice.stop()
 
         if not self.queue:
@@ -188,7 +189,7 @@ class Queue:
         random.shuffle(self.queue)
 
     def _send(self, msg, *args, **kwargs):
-        return asyncio.create_task(self.bound_channel.send(msg, *args, **kwargs))
+        return create_task(self.bound_channel.send(msg, *args, **kwargs))
 
     def cleanup(self):
         self.queue = None
@@ -201,35 +202,34 @@ class Queue:
             self.scale.queues.remove(self)
 
     def start(self):
-        print("attempt start")
         if self.running:
             return
 
         self.running = True
-        asyncio.create_task(self._start())
+        create_task(self._start())
 
     async def _start(self):
-        from pprint import pprint
+        logger.info(f"Starting a queue in {self.guild.name}")
 
         while self.queue:
             self.now_playing = np = self.queue.popleft()
             if np.expired:
-                print("Fix fired?")
-                print(time.time())
                 self.now_playing = np = await self.add(np.original_url)
 
-            self.current_player = player = await YTDLAudio.from_url(
+            self.current_player = await YTDLAudio.from_url(
                 np.url
             )  # Snek streams it live?
 
-            player.volume = self.volume
+            self.current_player.volume = self.volume
             # pprint(np.data)
             self._send(f"Now Playing: **{np.title}**")
 
             if self.voice is None:
-                self._send("The bot is not in a vc while trying to play a song, there is a possibility of errors")
+                self._send(
+                    "The bot is not in a vc while trying to play a song, there is a possibility of errors"
+                )
                 break
-            await self.voice.play(player)
+            await self.voice.play(self.current_player)
 
             # todo figure out how to have better refresh stuff
             if self.loop:
@@ -240,11 +240,11 @@ class Queue:
         self._send("Queue emptied")
         self.running = False
         self.queue.clear()
-        asyncio.get_running_loop().call_later(5 * 60, self._leave)
+        get_running_loop().call_later(5 * 60, self._leave)
 
     def _leave(self):
         if not self.running and self.voice:
-            asyncio.create_task(self.voice.disconnect())
+            create_task(self.voice.disconnect())
 
     # def prime_song(self):
     #     vc = self.voice
@@ -336,7 +336,7 @@ class Extractor:
         self.queue.start()
 
         for group in chunk(coros, size=25):
-            songs = await asyncio.gather(*group, return_exceptions=True)
+            songs = await gather(*group, return_exceptions=True)
             for item in songs:
                 if isinstance(item, Song):
                     await self.queue.add(item)

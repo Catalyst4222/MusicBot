@@ -23,8 +23,10 @@ def chunk(
     iterable: Iterable[_T], size: int = 10
 ) -> Generator[Generator[_T, Any, None], Any, None]:
     iterator = iter(iterable)
+    size -= 1
+
     for first in iterator:
-        yield chain([first], islice(iterator, size - 1))
+        yield chain([first], islice(iterator, size))
 
 
 def short_diff_from_unix(then: int) -> str:

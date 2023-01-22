@@ -1,15 +1,26 @@
-from dis_snek import (InteractionContext, OptionTypes, Scale, Snake,
-                      slash_command, slash_option)
-from dis_snek.api.voice.audio import YTDLAudio
-from dis_snek.models.discord.channel import VoiceChannel
+import logging
 
-from .classes import Extractor, Queue
+from naff import (
+    InteractionContext,
+    OptionTypes,
+    Extension,
+    Client,
+    slash_command,
+    slash_option,
+    GuildVoice,
+)
+
+from .classes import Queue
+
+logger = logging.getLogger("Myr.music")
 
 
-class SoundCog(Scale):
+class SoundCog(Extension):
     def __init__(self, bot):
-        self.bot: Snake = bot
+        self.bot: Client = bot
         self.queues: list[Queue] = []
+
+        logger.info("Music cog loaded!")
 
     def get_queue(self, ctx: InteractionContext) -> Queue:
         for queue in self.queues:
@@ -34,7 +45,7 @@ class SoundCog(Scale):
         ],
         scopes=[817958268097789972],
     )
-    async def join(self, ctx: InteractionContext, channel: VoiceChannel = None):
+    async def join(self, ctx: InteractionContext, channel: GuildVoice = None):
         if channel is not None:
             await channel.connect()
         elif ctx.author.voice:
@@ -91,7 +102,9 @@ class SoundCog(Scale):
     async def queue_base(self, ctx, *_, **__):
         ...
 
-    @queue_base.subcommand("show", sub_cmd_description="Show current songs in the queue")
+    @queue_base.subcommand(
+        "show", sub_cmd_description="Show current songs in the queue"
+    )
     async def queue_show(self, ctx):
         queue = self.get_queue(ctx)
 
@@ -104,5 +117,5 @@ class SoundCog(Scale):
         await ctx.send("NotImplemented")
 
 
-def setup(bot: Snake):
+def setup(bot: Client):
     SoundCog(bot)
