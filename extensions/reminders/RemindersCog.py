@@ -3,8 +3,8 @@ import logging
 import time
 
 import aiosqlite
-from naff import (InteractionContext, OptionTypes, Extension, Client, listen,
-                      slash_command, slash_option)
+from naff import (Client, Extension, InteractionContext, OptionTypes, listen,
+                  slash_command, slash_option)
 
 logger = logging.getLogger("Myr.reminders")
 
@@ -34,7 +34,6 @@ class RemindersCog(Extension):
     def shed(self) -> None:
         super(RemindersCog, self).shed()
         logger.info("Reminders cog unloaded!")
-
 
     @slash_command(
         name="remindme",

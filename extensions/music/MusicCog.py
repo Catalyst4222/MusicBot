@@ -1,14 +1,7 @@
 import logging
 
-from naff import (
-    InteractionContext,
-    OptionTypes,
-    Extension,
-    Client,
-    slash_command,
-    slash_option,
-    GuildVoice,
-)
+from naff import (Client, Extension, GuildVoice, InteractionContext,
+                  OptionTypes, slash_command, slash_option)
 
 from .classes import Queue
 

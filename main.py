@@ -1,9 +1,9 @@
 import asyncio
 from os import getenv
 
-from naff import Client, listen
 from dotenv import load_dotenv
 from loguru import logger
+from naff import Client, listen
 
 bot = Client()
 
@@ -30,4 +30,3 @@ bot.start(getenv("TOKEN"))
 
 for scale in bot.ext.values():
     scale.shed()
-

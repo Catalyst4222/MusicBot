@@ -1,7 +1,7 @@
 import asyncio
 
-from naff import ChannelTypes, Client, Extension, InteractionContext, OptionTypes, slash_command, slash_option, \
-    GuildVoice
+from naff import (ChannelTypes, Client, Extension, GuildVoice,
+                  InteractionContext, OptionTypes, slash_command, slash_option)
 from naff_audio import YTAudio
 
 from .tools import MusicQueue
@@ -22,7 +22,12 @@ class MusicCog(Extension):
         return queue
 
     @slash_command("join")
-    @slash_option("channel", "The channel to join", OptionTypes.CHANNEL, channel_types=[ChannelTypes.GUILD_VOICE])
+    @slash_option(
+        "channel",
+        "The channel to join",
+        OptionTypes.CHANNEL,
+        channel_types=[ChannelTypes.GUILD_VOICE],
+    )
     async def join(self, ctx: InteractionContext, channel: GuildVoice = None):
         if channel is not None:
             await channel.connect()
@@ -57,7 +62,8 @@ class MusicCog(Extension):
         await ctx.send(f"**{audio.entry['title']}** was added to the queue!")
 
     # @slash_command("now")
-    async def now(self, *args): ...
+    async def now(self, *args):
+        ...
 
     # @now.subcommand("playing", "Get the song that's currently playing")
     async def now_playing(self, ctx: InteractionContext):
@@ -72,7 +78,6 @@ class MusicCog(Extension):
         queue = self.get_queue(ctx)
         await queue.skip()
         await ctx.send("Skipped!")
-
 
 
 def setup(bot: Client):  # sourcery skip: instance-method-first-arg-name

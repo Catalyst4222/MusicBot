@@ -3,12 +3,12 @@ import logging
 import random
 import re
 import time
-from asyncio import gather, create_task, get_running_loop
+from asyncio import create_task, gather, get_running_loop
 from collections import deque
 from typing import TYPE_CHECKING, Coroutine, Optional, Union
 
-from naff import (ActiveVoiceState, Embed, Guild, GuildText,
-                      InteractionContext, Client)
+from naff import (ActiveVoiceState, Client, Embed, Guild, GuildText,
+                  InteractionContext)
 from yt_dlp import YoutubeDL
 
 from .utils import (chunk, short_diff_from_time, short_diff_from_unix,

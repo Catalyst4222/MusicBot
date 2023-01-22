@@ -26,7 +26,6 @@ class MusicQueue(NaffQueue):
             await self.voice_state.play(audio)
             self.now_playing = None
 
-
     async def __call__(self) -> None:
         # needed for overrides
         await self.__playback_queue()
@@ -34,8 +33,3 @@ class MusicQueue(NaffQueue):
     async def skip(self):
         """Skip the current song"""
         await self.voice_state.stop()
-
-
-
-
-
