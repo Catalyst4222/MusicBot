@@ -79,6 +79,27 @@ class MusicCog(Extension):
         await queue.skip()
         await ctx.send("Skipped!")
 
+    @slash_command("queue", description="manage queue stuff")
+    async def queue_base(self, ctx, *_, **__):
+        ...
+
+    # @queue_base.subcommand(
+    #     "show", sub_cmd_description="Show current songs in the queue"
+    # )
+    async def queue_show(self, ctx):
+        queue = self.get_queue(ctx)
+
+        msg = [queue.now_playing.title]
+        msg.extend(song.title for song in queue.queue)
+        await ctx.send("\n".join(msg))
+
+    @queue_base.subcommand("clear", sub_cmd_description="Clear the queue")
+    async def queue_clear(self, ctx):
+        queue = self.get_queue(ctx)
+        queue.clear()
+        await ctx.send("Queue cleared!")
+
+
 
 def setup(bot: Client):  # sourcery skip: instance-method-first-arg-name
     MusicCog(bot)
