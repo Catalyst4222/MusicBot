@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from loguru import logger
 from naff import Client, listen
 
-bot = Client()
+bot = Client(sync_interactions=True)
 
 
 @listen()
@@ -14,6 +14,7 @@ async def on_ready():
 
 
 bot.load_extension("extensions.new_music.NewMusic")
+bot.load_extension("extensions.misc.SpeechBubble")
 # bot.load_extension("reminders.RemindersCog")
 # do a reminder thing sometime?
 # and maybe a welcome message db
