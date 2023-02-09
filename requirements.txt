@@ -4,3 +4,4 @@ python-dotenv
 orjson
 aiosqlite
 pet-pet-gif
+loguru
